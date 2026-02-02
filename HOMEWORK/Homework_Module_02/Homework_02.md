@@ -106,25 +106,3 @@ triggers:
     cron: "0 9 * * *"
     timezone: America/New_York
 ```
-
----
-
-## Environment Setup
-
-All analysis was performed using the project's virtual environment (`.venv`) with the following packages:
-- pandas
-- requests
-
-## Scripts Used
-
-The Python script [count_rows.py](count_rows.py) was used to download and count rows in the NYC taxi datasets using pandas for accurate data parsing.
-
-### Running the Script
-
-```bash
-# From the project root, using the virtual environment
-/home/ridwan/Desktop/PROJECTS/Data_Engineering/de-zoomcamp/.venv/bin/python \
-  HOMEWORK/Homework_Module_02/count_rows.py
-```
-
-The script downloads compressed CSV files directly from the NYC TLC data repository and uses pandas to accurately count rows, handling data types properly.
