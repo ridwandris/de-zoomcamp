@@ -1,5 +1,5 @@
 # Virtual Environment Set-Up
-Instead of Pip, we choose to work with `uv`. It is the modern light weight and powerful dependency manager, it fast and very reliable.
+Instead of Pip, we choose to work with `uv`. It is the modern light weight and powerful dependency manager, it fast and very reliable cos its written in **Rust**.
 
 ### The Standard Workflow
 
