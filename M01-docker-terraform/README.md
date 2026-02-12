@@ -167,7 +167,9 @@ docker run -it \
 Inside the python container, we can run python scrips that acces docs from the local repository.
 
 
-# Data Pipelines
+# Docker images: A Data Pipeline example
+Now, let's "containerize" a pipeline. We need a Dockerfile that takes the python code and the uv environment, then bakes them into an image.
+
 A **data pipeline** is a service that receives data as input and outputs more data. For example, reading a CSV file, transforming the data somehow and storing it as a table in a PostgreSQL database.
 
 In short, A data pipeline is a process that takes data from one point to another
@@ -198,5 +200,51 @@ COPY M01-docker-terraform/pipeline.py .
 ENTRYPOINT ["python", "pipeline.py" ]
 ```
 
+
+Let's break down your specific recipe line-by-line.
+1. The Foundation (FROM)
+
+```bash
+FROM ghcr.io/astral-sh/uv:python3.12-alpine
+```
+Concept: Every image starts with a parent.
+python3.12: The Python version.
+alpine: A tiny, 5MB version of Linux. Industry pros love it because it’s secure and lightweight.
+uv: This base already has the uv tool pre-installed.
+
+2. The Context (WORKDIR)
+
+`WORKDIR /app`
+
+Concept: This is the internal cd command.Everything we do from here on happens inside a folder named /app inside the image. It keeps our "frozen computer" tidy.
+
+3. The Wiring (ENV PATH)
+```bash
+ENV PATH="/app/.venv/bin:$PATH"
+```
+Concept: Setting the "Look Here First" rule.When uv installs packages, it puts them in a virtual environment (.venv). This line tells the computer: "When I type python, look inside the .venv folder before looking anywhere else."
+
+4. The Manifests (COPY)
+```bash
+COPY pyproject.toml .python-version uv.lock ./
+```
+Concept: Moving the "Shopping List" from your laptop into the image. We copy these files first and separately. Why? Layer Caching. Docker remembers that it has already seen these files. If you change your code but not your libraries, Docker will skip the expensive "install" step next time you build.
+
+5. The Build Step (RUN)
+
+`RUN uv sync --locked`
+
+Concept: Actually doing the work. This command runs during the build phase. It downloads all the libraries in your uv.lock and creates the environment. Once this is done, those libraries are "baked" into the image forever.
+
+6. The Logic (COPY)
+```bash
+COPY M01-docker-terraform/pipeline.py .
+```
+Concept: Moving the actual "Brain" of the operation. We copy your script last. Since your code changes more often than your libraries, putting this last ensures your builds stay lightning-fast.
+
+7. The Default Command (ENTRYPOINT)
+`ENTRYPOINT ["python", "pipeline.py" ]`
+
+Concept: The "Play" button. This tells the container what to do the moment it wakes up. When you run the container, it immediately executes python pipeline.py.
 
 
