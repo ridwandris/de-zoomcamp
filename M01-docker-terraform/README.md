@@ -248,3 +248,7 @@ Concept: Moving the actual "Brain" of the operation. We copy your script last. S
 Concept: The "Play" button. This tells the container what to do the moment it wakes up. When you run the container, it immediately executes python pipeline.py.
 
 
+# Running PostgresSQL in a Container
+
+
+
