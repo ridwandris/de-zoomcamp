@@ -9,6 +9,6 @@ COPY pyproject.toml .python-version uv.lock ./
 RUN uv sync --locked
 
 # Copy the pipeline script specifically from the module folder
-COPY M01-docker-terraform/pipeline.py .
+COPY M01-docker-terraform/injest_data.py .
 
-ENTRYPOINT ["python", "pipeline.py" ]
+ENTRYPOINT ["python", "injest_data.py"]

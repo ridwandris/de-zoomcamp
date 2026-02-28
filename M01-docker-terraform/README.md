@@ -248,6 +248,186 @@ Concept: Moving the actual "Brain" of the operation. We copy your script last. S
 Concept: The "Play" button. This tells the container what to do the moment it wakes up. When you run the container, it immediately executes python pipeline.py.
 
 
+---
+
+# Building Docker Images: Project-Wide Guide
+
+This section explains how to correctly build Docker images in this project structure and avoid common pitfalls when working with multiple module directories (M01, M02, M03, etc.).
+
+## The Problem We Solved
+
+When building the `taxi_ingest:v001` image, we encountered two issues:
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| `COPY failed: file not found` | Running `docker build .` from inside `M01-docker-terraform/` but Dockerfile referenced `pyproject.toml` in parent directory | Build from project root using `-f` flag |
+| `can't stat 'ny_taxi_postgres_data'` | Docker tried to include PostgreSQL data files with permission restrictions | Added `.dockerignore` in project root |
+
+## Why Always Build from Project Root?
+
+### Project Structure Reality
+
+```
+de-zoomcamp/                    ← PROJECT ROOT (build context)
+├── pyproject.toml              ← Shared dependency manifest
+├── .python-version             ← Shared Python version
+├── uv.lock                     ← Shared lockfile
+├── .dockerignore               ← Excludes problematic files
+├── M01-docker-terraform/
+│   ├── Dockerfile
+│   └── injest_data.py
+├── M02-workflow-orchestration/
+│   ├── Dockerfile              ← Future Dockerfiles
+│   └── some_script.py
+├── M03-data-warehouse/
+│   ├── Dockerfile
+│   └── another_script.py
+└── ny_taxi_postgres_data/      ← Excluded by .dockerignore
+```
+
+### The Core Constraint
+
+Docker's `COPY` command **cannot access files outside the build context**. Since all modules share:
+- `pyproject.toml` (dependencies)
+- `.python-version` (Python version)
+- `uv.lock` (locked versions)
+
+These files live in the **project root**, so the build context **must** be the project root.
+
+### The Correct Build Pattern
+
+```bash
+# Always run from project root
+cd /home/ridwan/Desktop/PROJECTS/Data_Engineering/de-zoomcamp
+
+# Use -f to specify which Dockerfile to use
+docker build -t <image_name>:<tag> -f <module>/Dockerfile .
+```
+
+**Examples for each module:**
+
+```bash
+# M01
+docker build -t taxi_ingest:v001 -f M01-docker-terraform/Dockerfile .
+
+# M02 (future)
+docker build -t workflow_tool:v001 -f M02-workflow-orchestration/Dockerfile .
+
+# M03 (future)
+docker build -t warehouse_loader:v001 -f M03-data-warehouse/Dockerfile .
+```
+
+### What `-f` Does
+
+| Flag | Purpose |
+|------|---------|
+| `-f M01-docker-terraform/Dockerfile` | Tells Docker which Dockerfile to read |
+| `.` (at the end) | Sets the build context to current directory (project root) |
+
+## Writing Dockerfiles for Any Module
+
+When creating a new Dockerfile in M02, M03, or any other module, follow this template:
+
+```dockerfile
+FROM ghcr.io/astral-sh/uv:python3.12-alpine
+
+WORKDIR /app
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Step 1: Copy shared dependency files from project root
+COPY pyproject.toml .python-version uv.lock ./
+
+# Step 2: Install dependencies
+RUN uv sync --locked
+
+# Step 3: Copy YOUR module's script (use full path from project root)
+COPY M02-workflow-orchestration/your_script.py .
+#     ^^^^^^^^^^^^^^^^^^^^^^^^^ 
+#     Full path from project root, NOT relative to Dockerfile location
+
+ENTRYPOINT ["python", "your_script.py"]
+```
+
+### Key Rule for COPY Paths
+
+| Scenario | Wrong ❌ | Correct ✅ |
+|----------|---------|-----------|
+| Copying script from M02 | `COPY your_script.py .` | `COPY M02-workflow-orchestration/your_script.py .` |
+| Copying folder from M03 | `COPY src/ .` | `COPY M03-data-warehouse/src/ .` |
+
+The path is **always relative to the build context (project root)**, not relative to where the Dockerfile is located.
+
+## Understanding .dockerignore
+
+### Why We Need It
+
+The `.dockerignore` file sits in the **project root** and tells Docker which files/folders to exclude from the build context.
+
+**Location:** `/home/ridwan/Desktop/PROJECTS/Data_Engineering/de-zoomcamp/.dockerignore`
+
+**Current contents:**
+```
+ny_taxi_postgres_data/
+.git/
+__pycache__/
+*.pyc
+.venv/
+```
+
+### What Each Line Does
+
+| Pattern | Purpose |
+|---------|---------|
+| `ny_taxi_postgres_data/` | Excludes PostgreSQL data files (permission issues, large size) |
+| `.git/` | Excludes Git history (unnecessary in container, large) |
+| `__pycache__/` | Excludes Python bytecode cache |
+| `*.pyc` | Excludes compiled Python files |
+| `.venv/` | Excludes local virtual environment (container builds its own) |
+
+### Why This Matters for Future Modules
+
+When you add new modules (M02, M03, etc.), the **same `.dockerignore`** applies to all builds because:
+1. You always build from project root
+2. `.dockerignore` must be in the build context root
+3. One file covers all modules
+
+### When to Update .dockerignore
+
+Add new entries when:
+- A module generates large data files (e.g., `M02-workflow-orchestration/output_data/`)
+- You have credentials or secrets that shouldn't be in images
+- Build fails due to permission errors on specific directories
+
+**Example addition for M02:**
+```
+ny_taxi_postgres_data/
+.git/
+__pycache__/
+*.pyc
+.venv/
+M02-workflow-orchestration/large_dataset/
+```
+
+## Quick Reference Checklist
+
+Before building any Docker image in this project:
+
+- [ ] Am I in the **project root** directory? (`de-zoomcamp/`)
+- [ ] Does my Dockerfile use **full paths from project root** for COPY commands?
+- [ ] Is `.dockerignore` present in project root?
+- [ ] Am I using `-f <module>/Dockerfile .` in my build command?
+
+## Common Errors and Fixes
+
+| Error Message | Cause | Fix |
+|---------------|-------|-----|
+| `COPY failed: file not found in build context` | Wrong COPY path or wrong build directory | Build from project root, use full path in COPY |
+| `forbidden path outside the build context` | Using `../` in COPY path | Never use `..`, build from project root instead |
+| `can't stat '<directory>'` | Permission issues on a directory | Add directory to `.dockerignore` |
+| `Sending build context to Docker daemon  X GB` | Too many files being sent | Add large directories to `.dockerignore` |
+
+---
+
 # Running PostgresSQL in a Container
 
 
