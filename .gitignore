@@ -212,5 +212,5 @@ ny_taxi_db_data/
 *.csv
 *.parquet
 
-# Environment files with secrets
-.env
+# Local Postgres data directory, which may contain sensitive information and is not needed for version control
+ny_taxi_postgres_data/

@@ -1,5 +1,8 @@
+# Use the official Python image from the Docker Hub, 
+# specifically the Alpine version for a smaller image size
 FROM ghcr.io/astral-sh/uv:python3.12-alpine
 
+# Set the working directory to /app, which is where our project files will be located
 WORKDIR /app
 ENV PATH="/app/.venv/bin:$PATH"
 
