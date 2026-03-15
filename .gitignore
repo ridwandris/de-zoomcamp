@@ -221,6 +221,7 @@ ny_taxi_postgres_data/
 # GCP service account credentials file
 *.json
 my-creds.json
+.env_creds_encoded
 
 # Terraform files that may contain sensitive information or are specific to the local environment
 .terraformrc
@@ -231,3 +232,4 @@ terraform.tfstate
 terraform.tfstate.backup
 
 Docker-Taxi-DB02.session.sql
+
