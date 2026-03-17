@@ -233,3 +233,5 @@ terraform.tfstate.backup
 
 Docker-Taxi-DB02.session.sql
 
+# BQML model files
+serving_dir

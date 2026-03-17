@@ -26,6 +26,12 @@ variable "bq_dataset_name" {
   default = "zoomcamp_dataset"
 }
 
+# New dataset for homework 3
+variable "hw3_bq_dataset_name" {
+  description = "BigQuery Dataset Name for Module 3 Homework"
+  default     = "hw3_dataset"
+}
+
 variable "gcs_bucket_name" {
   description = "My Storage Bucket Name"
   #Update the below to a unique bucket name

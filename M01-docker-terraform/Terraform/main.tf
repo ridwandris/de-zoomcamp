@@ -37,3 +37,9 @@ resource "google_bigquery_dataset" "demo_dataset" {
   dataset_id = var.bq_dataset_name
   location   = var.location
 }
+
+# 3. Build the Data Warehouse (Homework 3 Dataset)
+resource "google_bigquery_dataset" "hw3_dataset" {
+  dataset_id = var.hw3_bq_dataset_name
+  location   = var.location
+}
