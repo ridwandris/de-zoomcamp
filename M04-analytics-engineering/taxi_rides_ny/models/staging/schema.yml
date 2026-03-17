@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: staging
+    database: dtc-de-course-488907  # Your GCP Project ID
+    schema: hw3_dataset             # The dataset where your raw tables live
+    tables:
+      - name: yellow_tripdata_non_partitioned
