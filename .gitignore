@@ -209,7 +209,7 @@ __marimo__/
 # Data folders
 data/
 ny_taxi_db_data/
-*.csv
+# *.csv
 *.parquet
 
 # Local Postgres data directory, which may contain sensitive information and is not needed for version control

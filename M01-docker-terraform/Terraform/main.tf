@@ -43,3 +43,10 @@ resource "google_bigquery_dataset" "hw3_dataset" {
   dataset_id = var.hw3_bq_dataset_name
   location   = var.location
 }
+
+
+# 4. Build the Data Warehouse (DBT Production Dataset)
+resource "google_bigquery_dataset" "dbt_prod_dataset" {
+  dataset_id = var.dbt_prod_bq_dataset_name
+  location   = var.location
+}

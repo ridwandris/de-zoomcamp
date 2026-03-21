@@ -32,6 +32,13 @@ variable "hw3_bq_dataset_name" {
   default     = "hw3_dataset"
 }
 
+# New dataset for dbt production
+variable "dbt_prod_bq_dataset_name" {
+  description = "BigQuery Dataset Name for Module 3 Homework"
+  default     = "prod_taxi"
+}
+
+
 variable "gcs_bucket_name" {
   description = "My Storage Bucket Name"
   #Update the below to a unique bucket name
