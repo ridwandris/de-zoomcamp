@@ -11,7 +11,7 @@ SELECT
     CAST(tpep_pickup_datetime AS TIMESTAMP) AS pickup_datetime,
     CAST(tpep_dropoff_datetime AS TIMESTAMP) AS dropoff_datetime,
 
-    -- trip info
+    -- trip info here
     store_and_fwd_flag,
     CAST(passenger_count AS INT64) AS passenger_count,
     CAST(trip_distance AS NUMERIC) AS trip_distance,
