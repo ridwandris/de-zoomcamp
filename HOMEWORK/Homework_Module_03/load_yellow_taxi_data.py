@@ -10,11 +10,7 @@ import time
 # Change this to your bucket name
 BUCKET_NAME = "kestra-demo-bucket-ridwan99"
 
-# If you authenticated through the GCP SDK you can comment out these two lines
-# CREDENTIALS_FILE = "gcs.json"
-# client = storage.Client.from_service_account_json(CREDENTIALS_FILE)
-
-# If commented initialize client with the following
+# Initializing client with project ID
 client = storage.Client(project='dtc-de-course-488907')
 
 
